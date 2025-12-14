@@ -112,14 +112,14 @@ public static class Updater
 
         string dllPath = $"{LatiteInjectorDataFolder}\\Latite.dll";
 
-        bool useBeta = SettingsWindow.IsLatiteBetaEnabled;
+        bool useBeta = Properties.Settings.Default.Nightly;
         string betaDllPath = $"{LatiteInjectorDataFolder}\\LatiteNightly.dll";
 
-        bool useDebug = SettingsWindow.IsLatiteDebugEnabled;
+        bool useDebug = Properties.Settings.Default.Debug;
         string debugDllPath = $"{Logging.LatiteFolder}\\LatiteDebug.dll";
         string debugPdbPath = $"{Logging.LatiteFolder}\\LatiteDebug.pdb";
 
-        string customDllUrl = SettingsWindow.CustomDLLURL;
+        string customDllUrl = Properties.Settings.Default.CustomDllUrl;
         string customDllPath = $"{Logging.LatiteFolder}\\Custom_DLL.dll";
 
         // This whole section looks like a schizophrenic wrote it

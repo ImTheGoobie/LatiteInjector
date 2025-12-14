@@ -1,10 +1,11 @@
-﻿using System;
+﻿using DiscordRPC;
+using LatiteInjector.Properties;
+using LatiteInjector.Utils;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
-using DiscordRPC;
-using LatiteInjector.Utils;
 using Application = System.Windows.Application;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
@@ -44,7 +45,7 @@ public partial class MainWindow
 
         await Injector.WaitForMinecraft();
         await Injector.InjectionPrep();
-        if(string.IsNullOrEmpty(SettingsWindow.CustomDLLURL))
+        if(string.IsNullOrEmpty(Settings.Default.CustomDllUrl))
             await Injector.CheckVersionCompatibility();
         await Injector.WaitForModules();
 
@@ -53,14 +54,14 @@ public partial class MainWindow
         DiscordPresence.CurrentTimestamp = Timestamps.Now;
 
         Injector.Minecraft.EnableRaisingEvents = true;
-        Injector.Minecraft.Exited += IfMinecraftExited;
+        Injector.Minecraft.Exited += IfMinecraftExited!;
     }
 
     private async void LaunchButton_OnRightClick(object sender, RoutedEventArgs e)
     {
         // The Spanish translation is SO long for some fucking reason so
         // this is a special case to try to make the text fit into the StatusLabel
-        if (SettingsWindow.SelectedLanguage == "pack://application:,,,/Latite Injector;component//Assets/Translations/Spanish.xaml")
+        if (Settings.Default.SelectedLanguage == "pack://application:,,,/Latite Injector;component//Assets/Translations/Spanish.xaml")
             StatusLabel.FontSize = 12;
         SetStatusLabel.Pending(App.GetTranslation("User is selecting DLL..."));
 
@@ -73,7 +74,7 @@ public partial class MainWindow
         if (openFileDialog.ShowDialog() != true)
         {
             SetStatusLabel.Default();
-            if (SettingsWindow.SelectedLanguage ==
+            if (Settings.Default.SelectedLanguage ==
                 "pack://application:,,,/Latite Injector;component//Assets/Translations/Spanish.xaml")
                 StatusLabel.FontSize = 15;
             return;
@@ -83,7 +84,7 @@ public partial class MainWindow
 
         if (Process.GetProcessesByName("Minecaft.Windows").Length != 0) return;
 
-        if (SettingsWindow.SelectedLanguage ==
+        if (Settings.Default.SelectedLanguage ==
             "pack://application:,,,/Latite Injector;component//Assets/Translations/Spanish.xaml")
             StatusLabel.FontSize = 15;
 
@@ -98,12 +99,12 @@ public partial class MainWindow
         DiscordPresence.CurrentTimestamp = Timestamps.Now;
 
         Injector.Minecraft.EnableRaisingEvents = true;
-        Injector.Minecraft.Exited += IfMinecraftExited;
+        Injector.Minecraft.Exited += IfMinecraftExited!;
     }
 
     private static void IfMinecraftExited(object sender, EventArgs e)
     {
-        if (SettingsWindow.IsDiscordPresenceEnabled)
+        if (Settings.Default.DiscordPresence)
         {
             DiscordPresence.CurrentTimestamp = Timestamps.Now;
             DiscordPresence.IdlePresence();
@@ -115,14 +116,14 @@ public partial class MainWindow
     private void CreditButton_OnClick(object sender, RoutedEventArgs e)
     {
         App.CreditWindow.Show();
-        if (SettingsWindow.IsDiscordPresenceEnabled)
+        if (Settings.Default.DiscordPresence)
             DiscordPresence.CreditsPresence();
     }
     
     private void LanguageButton_OnClick(object sender, RoutedEventArgs e)
     {
         App.LanguageWindow.Show();
-        if (SettingsWindow.IsDiscordPresenceEnabled)
+        if (Settings.Default.DiscordPresence)
             DiscordPresence.LanguagesPresence();
     }
 
@@ -132,7 +133,7 @@ public partial class MainWindow
     private void SettingsButton_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
         App.SettingsWindow.Show();
-        if (SettingsWindow.IsDiscordPresenceEnabled)
+        if (Settings.Default.DiscordPresence)
             DiscordPresence.SettingsPresence();
     }
 

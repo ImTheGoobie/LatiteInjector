@@ -1,9 +1,10 @@
-﻿using System;
+﻿using LatiteInjector.Properties;
+using LatiteInjector.Utils;
+using Microsoft.Win32;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using LatiteInjector.Utils;
-using Microsoft.Win32;
 
 namespace LatiteInjector
 {
@@ -20,7 +21,7 @@ namespace LatiteInjector
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             Hide();
-            if (!SettingsWindow.IsDiscordPresenceEnabled) return;
+            if (!Settings.Default.DiscordPresence) return;
             if (!Injector.IsMinecraftRunning())
             {
                 DiscordPresence.IdlePresence();
@@ -32,7 +33,7 @@ namespace LatiteInjector
         private void Window_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DragMove();
 
         private RadioButton _languageSelected = new();
-        
+
         private void CustomLanguageRadioButton_OnClick(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new()
@@ -43,27 +44,48 @@ namespace LatiteInjector
 
             if (!(openFileDialog.ShowDialog() ?? false))
             {
-                _languageSelected.IsChecked = true;   
+                _languageSelected.IsChecked = true;
                 return;
             }
-            CustomLanguageRadioButton.Content = openFileDialog.FileName;
+
+            string selectedFile = openFileDialog.FileName;
+            CustomLanguageRadioButton.Content = selectedFile;
+
             try
             {
-                App.ChangeLanguage(new Uri(openFileDialog.FileName, UriKind.Absolute));
-                SettingsWindow.ModifyConfig($"selectedlanguage:{openFileDialog.FileName}", 4);
+                App.ChangeLanguage(new Uri(selectedFile, UriKind.Absolute));
+                Settings.Default.SelectedLanguage = selectedFile;
+                Settings.Default.Save();
             }
             catch (Exception)
             {
-                App.ChangeLanguage(new Uri("pack://application:,,,/Latite Injector;component//Assets/Translations/English.xaml", UriKind.Absolute));
-                SettingsWindow.ModifyConfig("selectedlanguage:pack://application:,,,/Latite Injector;component//Assets/Translations/English.xaml", 4);
+                string defaultLang = "pack://application:,,,/Latite Injector;component//Assets/Translations/English.xaml";
+                App.ChangeLanguage(new Uri(defaultLang, UriKind.Absolute));
+                Settings.Default.SelectedLanguage = defaultLang;
+                Settings.Default.Save();
             }
         }
 
         private void ToggleButton_OnChecked(object sender, RoutedEventArgs e)
         {
             _languageSelected = (RadioButton)sender;
-            App.ChangeLanguage(new Uri($"pack://application:,,,/Latite Injector;component//Assets/Translations/{((RadioButton)sender).Content}.xaml"));
-            SettingsWindow.ModifyConfig($"selectedlanguage:pack://application:,,,/Latite Injector;component//Assets/Translations/{((RadioButton)sender).Content}.xaml", 4);
+
+            string langName = ((RadioButton)sender).Content.ToString()!;
+            string langUri = $"pack://application:,,,/Latite Injector;component//Assets/Translations/{langName}.xaml";
+
+            try
+            {
+                App.ChangeLanguage(new Uri(langUri, UriKind.Absolute));
+                Settings.Default.SelectedLanguage = langUri;
+                Settings.Default.Save();
+            }
+            catch (Exception)
+            {
+                string defaultLang = "pack://application:,,,/Latite Injector;component//Assets/Translations/English.xaml";
+                App.ChangeLanguage(new Uri(defaultLang, UriKind.Absolute));
+                Settings.Default.SelectedLanguage = defaultLang;
+                Settings.Default.Save();
+            }
         }
 
         private void LanguageWindow_OnLoaded(object sender, RoutedEventArgs e)
@@ -71,7 +93,7 @@ namespace LatiteInjector
             foreach (UIElement uiElement in LanguagesStackPanel.Children)
             {
                 if (uiElement is not RadioButton radioButton) continue;
-                if ((string)radioButton.Content != SettingsWindow.SelectedLanguage
+                if ((string)radioButton.Content != Settings.Default.SelectedLanguage
                         .Replace("pack://application:,,,/Latite Injector;component//Assets/Translations/", "")
                         .Replace(".xaml", "")) continue;
                 radioButton.IsChecked = true;
@@ -79,7 +101,7 @@ namespace LatiteInjector
             }
             
             CustomLanguageRadioButton.IsChecked = true;
-            CustomLanguageRadioButton.Content = SettingsWindow.SelectedLanguage;
+            CustomLanguageRadioButton.Content = Settings.Default.SelectedLanguage;
         }
     }
 }

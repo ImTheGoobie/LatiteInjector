@@ -1,6 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Input;
+﻿using LatiteInjector.Properties;
 using LatiteInjector.Utils;
+using System.Windows;
+using System.Windows.Input;
 
 namespace LatiteInjector
 {
@@ -17,15 +18,10 @@ namespace LatiteInjector
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             Hide();
-            if (SettingsWindow.IsDiscordPresenceEnabled)
-            {
-                if (!Injector.IsMinecraftRunning())
-                {
-                    DiscordPresence.IdlePresence();
-                    return;
-                }
-                DiscordPresence.PlayingPresence();
-            }
+            if (!Settings.Default.DiscordPresence) return;
+
+            if (!Injector.IsMinecraftRunning()) DiscordPresence.IdlePresence();
+            else DiscordPresence.PlayingPresence();
         }
 
         private void Window_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DragMove();
