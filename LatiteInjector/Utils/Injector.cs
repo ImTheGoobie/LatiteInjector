@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LatiteInjector.Properties;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -88,10 +89,9 @@ public static class Injector
         // Partially check if MinecraftVersion matches currently supported versions list
         bool isCompatible =
             supportedVersionsString.Contains(MinecraftVersion.Substring(0,
-                MinecraftVersion.LastIndexOf(".",
-                    StringComparison.Ordinal)));
+                MinecraftVersion.LastIndexOf(".", StringComparison.Ordinal)));
 
-        if (!isCompatible && !SettingsWindow.IsLatiteBetaEnabled)
+        if (!isCompatible && !Properties.Settings.Default.Nightly)
         {
             string warningMessageThatNobodyWillReadBecauseReadingIsForCasualsIGuess =
                 $"Your Minecraft version, {MinecraftVersion}, is not in the supported versions list for Latite Client. It is VERY likely that you will run into crashes or other types of bugs! " +
@@ -162,9 +162,9 @@ public static class Injector
                 return false;
             }
 
-            if (SettingsWindow.IsDiscordPresenceEnabled)
+            if (Settings.Default.DiscordPresence)
                 DiscordPresence.PlayingPresence();
-            if (SettingsWindow.IsCloseAfterInjectedEnabled)
+            if (Settings.Default.CloseAfterInjected)
                 Application.Current.Shutdown();
         }
         catch (Exception? ex)

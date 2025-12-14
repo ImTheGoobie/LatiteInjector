@@ -27,7 +27,7 @@ public static class Logging
         MessageBoxResult result = MessageBox.Show(
             App.GetTranslation(
                 @"An error has occurred! Please report this error to the developers!\nClick Yes to go to the Latite Discord.\n\n{0}...",
-                [ex?.ToString().Substring(0, 500)]),
+                [ex?.ToString().Substring(0, 500)!]),
             "An unhandled error has occurred!",
             MessageBoxButton.YesNo,
             MessageBoxImage.Error);

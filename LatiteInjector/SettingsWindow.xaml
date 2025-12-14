@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="{DynamicResource 'Latite Client Settings'}"
     Width="376"
-    Height="370"
+    Height="330"
     AllowsTransparency="True"
     RenderOptions.BitmapScalingMode="HighQuality"
     Background="Transparent"
@@ -241,22 +241,8 @@
                 IsChecked="False"
                 Style="{StaticResource CheckBox}" />
             <CheckBox
-                x:Name="DisableAppSuspensionCheckBox"
-                Margin="18,176,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                x:FieldModifier="public"
-                Background="#202020"
-                Click="DisableAppSuspensionCheckBox_OnClick"
-                Content="{DynamicResource 'Minimize fix'}"
-                Cursor="Hand"
-                FontSize="17"
-                Foreground="AliceBlue"
-                IsChecked="True"
-                Style="{StaticResource CheckBox}" />
-            <CheckBox
                 x:Name="LatiteBetaCheckBox"
-                Margin="18,206,0,0"
+                Margin="18,177,0,0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 x:FieldModifier="public"
@@ -270,7 +256,7 @@
                 Style="{StaticResource CheckBox}" />
             <CheckBox
                 x:Name="LatiteDebugCheckBox"
-                Margin="18,236,0,0"
+                Margin="18,207,0,0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 x:FieldModifier="public"
@@ -282,10 +268,7 @@
                 Foreground="AliceBlue"
                 IsChecked="False"
                 Style="{StaticResource CheckBox}" />
-            <Grid Margin="18,276,18,0"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Top"
-                Height="30">
+            <Grid Margin="18,0,18,55" Height="30" VerticalAlignment="Bottom">
 
                 <TextBox
                     x:Name="CustomDLLInput"

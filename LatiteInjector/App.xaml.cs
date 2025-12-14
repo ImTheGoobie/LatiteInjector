@@ -1,8 +1,9 @@
-﻿using LatiteInjector.Utils;
-using System.Globalization;
+﻿using LatiteInjector.Properties;
+using LatiteInjector.Utils;
 using System;
-using System.Windows;
 using System.ComponentModel;
+using System.Globalization;
+using System.Windows;
 
 namespace LatiteInjector;
 
@@ -27,10 +28,8 @@ public partial class App
             Current.Shutdown();
         }
 
-        SettingsWindow.ConfigSetup();
-
         DiscordPresence.InitializePresence();
-        if (SettingsWindow.IsDiscordPresenceEnabled)
+        if (Settings.Default.DiscordPresence)
             DiscordPresence.DefaultPresence();
 
         // is this probably a bad practice? yes! do i care? no!
@@ -39,77 +38,68 @@ public partial class App
         detailedPresenceTimer.Elapsed += DiscordPresence.DetailedPlayingPresence;
         detailedPresenceTimer.Start();
 
-        SettingsWindow.Closing += OnClosing;
-        CreditWindow.Closing += OnClosing;
-        LanguageWindow.Closing += OnClosing;
+        SettingsWindow.Closing += OnClosing!;
+        CreditWindow.Closing += OnClosing!;
+        LanguageWindow.Closing += OnClosing!;
 
         MainWindow = new MainWindow();
         LanguageOnStartup();
         MainWindow.Show();
     }
 
-    // oh my fucking god so scuffed, i really hope i just never have to touch this code ever again
-    // after im finished with this stuff
     public static void ChangeLanguage(Uri uri)
     {
-        ResourceDictionary lang = new();
-        if (null == Current)
-        {
-            new System.Windows.Application();
-        }
-        lang.Source = uri;
+        if (Application.Current == null)
+            throw new InvalidOperationException("Application.Current is null. ChangeLanguage must be called after App startup.");
 
-        Current.Resources.MergedDictionaries[0].Source = uri;
-        Current.Resources.MergedDictionaries[0] = lang;
-        SettingsWindow.SelectedLanguage = uri.OriginalString;
+        ResourceDictionary langDict = new ResourceDictionary{ Source = uri };
 
-        // StatusLabel, if content changed via code, doesn't switch language automatically
-        // so im calling it again here (this is kinda bad but honestly i give zero fucks right now)
+        var merged = Application.Current.Resources.MergedDictionaries;
+        if (merged.Count > 0) merged[0] = langDict;
+        else merged.Add(langDict);
+
+        Settings.Default.SelectedLanguage = uri.OriginalString;
+        Settings.Default.Save();
+
         SetStatusLabel.Default();
     }
 
-    // this function is hot dogshit that is in desperate need of a refactor
-    // actually the entire translation system is probably in need of a complete rewrite from scratch.
-    public static string GetTranslation(string input, string[]? args = null)
+    public static string GetTranslation(string key, params string[] args)
     {
         try
         {
-            if (args is not null)
+            var resource = Application.Current?.TryFindResource(key) ?? key;
+            string result = resource.ToString() ?? key;
+
+            if (args != null && args.Length > 0)
             {
-                string temp = (string)Current.TryFindResource(input);
-                for (var i = 0; i < args.Length; i++)
+                for (int i = 0; i < args.Length; i++)
                 {
-                    temp = temp.Replace($"{{{i}}}", args[i]);
+                    result = result.Replace($"{{{i}}}", args[i]);
                 }
-                // the replace is needed here since stuff like unhandled exception message
-                // have their newlines escaped by default
-                return temp.Replace("\\n", "\n");
             }
-            object? result = Current.TryFindResource(input);
-            string resultString = result.ToString();
-            if (result is not null)
-                return resultString?.Replace("\\n", "\n");
-            return input;
+
+            return result.Replace("\\n", "\n");
         }
-        catch (Exception)
+        catch
         {
-            return input.Replace("\\n", "\n");
+            return key.Replace("\\n", "\n");
         }
     }
 
     private static void LanguageOnStartup()
     {
-        if (SettingsWindow.SelectedLanguage !=
+        if (!string.IsNullOrWhiteSpace(Settings.Default.SelectedLanguage) &&
+            Settings.Default.SelectedLanguage !=
             "pack://application:,,,/Latite Injector;component//Assets/Translations/English.xaml")
         {
-            try
-            {
-                ChangeLanguage(new Uri(SettingsWindow.SelectedLanguage, UriKind.Absolute));
+            try {
+                ChangeLanguage(new Uri(Settings.Default.SelectedLanguage, UriKind.Absolute));
+                return;
             }
-            catch
-            {
+            catch (Exception ex) {
                 Logging.ErrorLogging(
-                    $"FAILED TO AUTO SWITCH LANGUAGE (SettingsWindow.SelectedLanguage) ({SettingsWindow.SelectedLanguage}) ({new Uri(SettingsWindow.SelectedLanguage, UriKind.Absolute)})");
+                    $"FAILED TO AUTO SWITCH LANGUAGE (SelectedLanguage) ({Settings.Default.SelectedLanguage}) ({ex})");
             }
         }
 
@@ -120,56 +110,37 @@ public partial class App
             "nl-NL" => "Dutch",
             "fr-FR" => "French",
             "hi-IN" => "Hindi",
-            "ja" => "Japanese",
-            "ja-JP" => "Japanese",
-            "pt" => "Portuguese",
-            "pt-BR" => "Portuguese, Brazilian",
-            "pt-PT" => "Portuguese",
-            "es" => "Spanish",
-            "es-AR" => "Spanish",
-            "es-BO" => "Spanish",
-            "es-CL" => "Spanish",
-            "es-CR" => "Spanish",
-            "es-DO" => "Spanish",
-            "es-EC" => "Spanish",
-            "es-ES" => "Spanish",
-            "es-GT" => "Spanish",
-            "es-HN" => "Spanish",
-            "es-MX" => "Spanish",
-            "es-NI" => "Spanish",
-            "es-PA" => "Spanish",
-            "es-PE" => "Spanish",
-            "es-PR" => "Spanish",
-            "es-PY" => "Spanish",
-            "es-SV" => "Spanish",
-            "es-UY" => "Spanish",
+            "ja" or "ja-JP" => "Japanese",
+            "pt" or "pt-BR" or "pt-PT" => "Portuguese",
+            "es" or "es-AR" or "es-BO" or "es-CL" or "es-CR" or "es-DO" or
+            "es-EC" or "es-ES" or "es-GT" or "es-HN" or "es-MX" or "es-NI" or
+            "es-PA" or "es-PE" or "es-PR" or "es-PY" or "es-SV" or "es-UY" or
             "es-VE" => "Spanish",
             "zh-CN" => "Chinese (Simplified)",
-            "zh-HK" => "Chinese (Traditional)",
-            "zh-MO" => "Chinese (Traditional",
-            "zh-TW" => "Chinese (Traditional)",
+            "zh-HK" or "zh-MO" or "zh-TW" => "Chinese (Traditional)",
             _ => null
         };
 
-        if (lang != null)
+        if (lang == null)
+            return;
+
+        string langUri =
+            $"pack://application:,,,/Latite Injector;component//Assets/Translations/{lang}.xaml";
+
+        try
         {
-            string langUri = $"pack://application:,,,/Latite Injector;component//Assets/Translations/{lang}.xaml";
-            SettingsWindow.SelectedLanguage = langUri;
-            try
-            {
-                ChangeLanguage(new Uri(langUri, UriKind.Absolute));
-            }
-            catch
-            {
-                Logging.ErrorLogging(
-                    $"FAILED TO AUTO SWITCH LANGUAGE (langUri) ({SettingsWindow.SelectedLanguage}) ({new Uri(SettingsWindow.SelectedLanguage, UriKind.Absolute)})");
-            }
-            SettingsWindow.ModifyConfig(
-                $"selectedlanguage:{langUri}",
-                4);
+            ChangeLanguage(new Uri(langUri, UriKind.Absolute));
+
+            Settings.Default.SelectedLanguage = langUri;
+            Settings.Default.Save();
+        }
+        catch (Exception ex)
+        {
+            Logging.ErrorLogging(
+                $"FAILED TO AUTO SWITCH LANGUAGE (langUri) ({langUri}) ({ex})");
         }
     }
-    
+
     private static void OnUnhandledException(object sender,
         UnhandledExceptionEventArgs ex) =>
         Logging.ExceptionLogging(ex.ExceptionObject as Exception);

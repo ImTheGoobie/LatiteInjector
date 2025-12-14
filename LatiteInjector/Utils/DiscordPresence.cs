@@ -8,6 +8,7 @@ using DiscordRPC;
 #endregion
 
 namespace LatiteInjector.Utils;
+using LatiteInjector.Properties;
 
 public static class DiscordPresence
 {
@@ -86,7 +87,7 @@ public static class DiscordPresence
                 LargeImageText = "Latite Client Icon"
             }
         });
-        SettingsWindow.IsDiscordPresenceEnabled = true;
+        Settings.Default.DiscordPresence = true;
     }
 
     public static void PlayingPresence()
@@ -109,7 +110,7 @@ public static class DiscordPresence
 
     public static void DetailedPlayingPresence(object? sender, ElapsedEventArgs e)
     {
-        if (!SettingsWindow.IsDiscordPresenceEnabled || !Injector.IsMinecraftRunning()) return;
+        if (!Settings.Default.DiscordPresence || !Injector.IsMinecraftRunning()) return;
 
         string serverIP = "none";
         if (File.Exists($@"{Logging.LatiteFolder}\serverip.txt"))
@@ -156,7 +157,7 @@ public static class DiscordPresence
     public static void StopPresence()
     {
         DiscordClient.ClearPresence();
-        SettingsWindow.IsDiscordPresenceEnabled = false;
+        Settings.Default.DiscordPresence = false;
     }
 
     public static void ShutdownPresence()
@@ -165,6 +166,6 @@ public static class DiscordPresence
         DiscordClient.ClearPresence();
         DiscordClient.Deinitialize();
         DiscordClient.Dispose();
-        SettingsWindow.IsDiscordPresenceEnabled = false;
+        Settings.Default.DiscordPresence = false;
     }
 }
