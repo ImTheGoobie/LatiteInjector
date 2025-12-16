@@ -1,9 +1,9 @@
-﻿using System;
+﻿using LatiteInjector.Properties;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
-using LatiteInjector.Properties;
 
 namespace LatiteInjector.Utils;
 
@@ -79,6 +79,9 @@ public static class Updater
 
     public static async Task<string> DownloadDll()
     {
+        if (!Directory.Exists(Logging.LatiteFolder))
+            Directory.CreateDirectory(Logging.LatiteFolder);
+
         string stablePath = Path.Combine(Logging.LatiteFolder, "Latite.dll");
         string nightlyPath = Path.Combine(Logging.LatiteFolder, "LatiteNightly.dll");
         string debugDllPath = Path.Combine(Logging.LatiteFolder, "LatiteDebug.dll");
