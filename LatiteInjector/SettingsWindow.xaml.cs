@@ -18,7 +18,7 @@ public partial class SettingsWindow : Window
 
         DiscordPresenceCheckBox.IsChecked = Settings.Default.DiscordPresence;
         CloseAfterInjectedCheckBox.IsChecked = Settings.Default.CloseAfterInjected;
-        LatiteBetaCheckBox.IsChecked = Settings.Default.Nightly;
+        LatiteNightlyCheckBox.IsChecked = Settings.Default.Nightly;
         LatiteDebugCheckBox.IsChecked = Settings.Default.Debug;
         CustomDLLInput.Text = Settings.Default.CustomDllUrl;
     }
@@ -50,9 +50,9 @@ public partial class SettingsWindow : Window
         Settings.Default.Save();
     }
 
-    private void LatiteBetaCheckBox_OnClick(object sender, RoutedEventArgs e)
+    private void LatiteNightlyCheckBox_OnClick(object sender, RoutedEventArgs e)
     {
-        Settings.Default.Nightly = LatiteBetaCheckBox.IsChecked == true;
+        Settings.Default.Nightly = LatiteNightlyCheckBox.IsChecked == true;
 
         if (Settings.Default.Nightly && Settings.Default.Debug)
         {
@@ -71,7 +71,7 @@ public partial class SettingsWindow : Window
             if (result != MessageBoxResult.Yes)
             {
                 Settings.Default.Nightly = false;
-                LatiteBetaCheckBox.IsChecked = false;
+                LatiteNightlyCheckBox.IsChecked = false;
             }
         }
 
@@ -85,7 +85,7 @@ public partial class SettingsWindow : Window
         if (Settings.Default.Debug && Settings.Default.Nightly)
         {
             Settings.Default.Nightly = false;
-            LatiteBetaCheckBox.IsChecked = false;
+            LatiteNightlyCheckBox.IsChecked = false;
         }
 
         if (Settings.Default.Debug)
@@ -108,13 +108,12 @@ public partial class SettingsWindow : Window
 
     private void CustomDLLInput_OnTextChanged(object sender, TextChangedEventArgs e)
     {
-        if (Uri.TryCreate(CustomDLLInput.Text, UriKind.Absolute, out var uri) &&
+        Settings.Default.CustomDllUrl = Uri.TryCreate(CustomDLLInput.Text, UriKind.Absolute, out var uri) &&
             (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps) &&
-            uri.AbsolutePath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-        {
-            Settings.Default.CustomDllUrl = CustomDLLInput.Text;
+            uri.AbsolutePath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ?
+            CustomDLLInput.Text : null;
+
             Settings.Default.Save();
-        }
     }
 
     private void SwitchLanguageButton_OnClick(object sender, RoutedEventArgs e)

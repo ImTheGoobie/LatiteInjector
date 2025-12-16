@@ -20,52 +20,13 @@ public static class DiscordPresence
         string LogoTooltip
     );
 
-    private static readonly Dictionary<List<string>, PresenceDetails> SupportedPresenceDict = new()
+    private static readonly Dictionary<string, PresenceDetails> presenceDictionary = new()
     {
-        {
-            new List<string>
-            {
-                "geo.hivebedrock.network",
-                "ca.hivebedrock.network",
-                "fr.hivebedrock.network",
-                "sg.hivebedrock.network",
-                "au.hivebedrock.network"
-            },
-            new PresenceDetails("The Hive", "thehive", "The Hive Logo")
-        },
-        {
-            // apparently cubecraft's region switching doesn't change
-            // server ip (at least with how latite detects server ip)
-            new List<string> { "mco.cubecraft.net" },
-            new PresenceDetails("Cubecraft Games", "cubecraft", "Cubecraft Games Logo")
-        },
-        {
-            new List<string> { "us.play.galaxite.net", "eu.play.galaxite.net", "play.galaxite.net" },
-            new PresenceDetails("Galaxite Network", "galaxite", "Galaxite Network Logo")
-        },
-        {
-            new List<string>
-            {
-                "zeqa.net",
-                "na.zeqa.net",
-                "au.zeqa.net",
-                "me.zeqa.net",
-                "za.zeqa.net",
-                "as.zeqa.net"
-            },
-            new PresenceDetails("Zeqa Practice", "zeqa", "Zeqa Logo")
-        },
-        {
-            new List<string>
-            {
-                "play.nethergames.org",
-                "ind.nethergames.org",
-                "us.nethergames.org",
-                "ap.nethergames.org",
-                "eu.nethergames.org"
-            },
-            new PresenceDetails("NetherGames Network", "nethergames", "NetherGames Network Logo")
-        }
+        { "hivebedrock.network", new PresenceDetails("The Hive", "thehive", "The Hive Logo") },
+        { "cubecraft.net", new PresenceDetails("Cubecraft Games", "cubecraft", "Cubecraft Games Logo") },
+        { "play.galaxite.net", new PresenceDetails("Galaxite Network", "galaxite", "Galaxite Network Logo") },
+        { "zeqa.net", new PresenceDetails("Zeqa Practice", "zeqa", "Zeqa Logo") },
+        { "nethergames.org", new PresenceDetails("NetherGames Network", "nethergames", "NetherGames Network Logo") }
     };
 
     public static void InitializePresence() => DiscordClient.Initialize();
@@ -73,39 +34,32 @@ public static class DiscordPresence
 
     public static void DefaultPresence()
     {
-        DiscordClient.SetPresence(new RichPresence
-        {
-            State = "Idling in the injector",
-            Timestamps = CurrentTimestamp,
-            Buttons = new[]
+        DiscordClient.SetPresence(
+            new RichPresence
             {
-                new Button { Label = "Download Latite Client", Url = "https://discord.gg/zcJfXxKTA4" }
-            },
-            Assets = new Assets
-            {
-                LargeImageKey = "latite",
-                LargeImageText = "Latite Client Icon"
+                State = "Idling in the injector",
+                Timestamps = CurrentTimestamp,
+                Buttons = new[]
+                {
+                    new Button { Label = "Download Latite Client", Url = "https://discord.gg/zcJfXxKTA4" }
+                },
+                Assets = new Assets
+                {
+                    LargeImageKey = "latite",
+                    LargeImageText = "Latite Client Icon"
+                }
             }
-        });
+        );
         Settings.Default.DiscordPresence = true;
     }
 
     public static void PlayingPresence()
     {
+        DiscordClient.UpdateDetails($"Playing Minecraft {Injector.MinecraftVersion}");
         DiscordClient.UpdateLargeAsset("minecraft", "Minecraft Bedrock Logo");
         DiscordClient.UpdateSmallAsset("latite", "Latite Client Icon");
-        if (!Injector.IsCustomDll)
-        {
-            DiscordClient.UpdateDetails(
-                $"Playing Minecraft {Injector.MinecraftVersion}");
-            DiscordClient.UpdateState("with Latite Client");
-        }
-        else if (Injector.IsCustomDll)
-        {
-            DiscordClient.UpdateDetails(
-                $"Playing Minecraft {Injector.MinecraftVersion}");
-            DiscordClient.UpdateState($"with {Injector.CustomDllName}");
-        }
+
+        DiscordClient.UpdateState(Injector.IsCustomDll ? $"with {Injector.CustomDllName}" : "with Latite Client");
     }
 
     public static void DetailedPlayingPresence(object? sender, ElapsedEventArgs e)
@@ -115,19 +69,17 @@ public static class DiscordPresence
         string serverIP = "none";
         if (File.Exists($@"{Logging.LatiteFolder}\serverip.txt"))
             serverIP = File.ReadAllText($@"{Logging.LatiteFolder}\serverip.txt");
-        foreach (KeyValuePair<List<string>, PresenceDetails> server in SupportedPresenceDict)
+        foreach (KeyValuePair<string, PresenceDetails> server in presenceDictionary)
         {
-            // if server ip not in list, skip this foreach execution
-            if (!server.Key.Contains(serverIP)) continue;
+            // Partial match check on server IP
+            if (serverIP.IndexOf(server.Key) == -1) continue;
 
             DiscordClient.UpdateDetails($"Playing on {server.Value.Name}");
-            if (!Injector.IsCustomDll)
-                DiscordClient.UpdateState("with Latite Client");
-            else if (Injector.IsCustomDll)
-                DiscordClient.UpdateState($"with {Injector.CustomDllName}");
+            DiscordClient.UpdateState(Injector.IsCustomDll ? $"with {Injector.CustomDllName}"  : "with Latite Client");
             DiscordClient.UpdateLargeAsset(server.Value.LogoKey, server.Value.LogoTooltip);
             DiscordClient.UpdateSmallAsset("latite", "Latite Client Icon");
         }
+
         if (serverIP == "none")
             PlayingPresence();
     }
