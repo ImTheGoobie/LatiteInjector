@@ -31,23 +31,15 @@ public partial class MainWindow
 
     private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DragMove();
 
-    public static string? GetLine(string? text, int lineNo)
-    {
-        string?[] lines = text?.Replace("\r", "").Split('\n') ?? Array.Empty<string>();
-        return lines.Length >= lineNo ? lines[lineNo - 1] : null;
-    } // https://stackoverflow.com/a/2606405/20083929
-
     private async void LaunchButton_OnLeftClick(object sender, RoutedEventArgs e)
     {
         if (Process.GetProcessesByName("Minecaft.Windows").Length != 0) return;
 
         Injector.OpenMinecraft();
 
-        await Injector.WaitForMinecraft();
         await Injector.InjectionPrep();
         if(string.IsNullOrEmpty(Settings.Default.CustomDllUrl))
             await Injector.CheckVersionCompatibility();
-        await Injector.WaitForModules();
 
         Injector.Inject(await Updater.DownloadDll());
         SetStatusLabel.Completed(App.GetTranslation("Injected Latite Client!"));
@@ -89,9 +81,7 @@ public partial class MainWindow
             StatusLabel.FontSize = 15;
 
         Injector.OpenMinecraft();
-        await Injector.WaitForMinecraft();
         await Injector.InjectionPrep();
-        await Injector.WaitForModules();
 
         Injector.IsCustomDll = true;
         Injector.Inject(openFileDialog.FileName);

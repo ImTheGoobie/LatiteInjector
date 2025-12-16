@@ -241,13 +241,13 @@
                 IsChecked="False"
                 Style="{StaticResource CheckBox}" />
             <CheckBox
-                x:Name="LatiteBetaCheckBox"
+                x:Name="LatiteNightlyCheckBox"
                 Margin="18,177,0,0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 x:FieldModifier="public"
                 Background="#202020"
-                Click="LatiteBetaCheckBox_OnClick"
+                Click="LatiteNightlyCheckBox_OnClick"
                 Content="{DynamicResource 'Latite Nightly'}"
                 Cursor="Hand"
                 FontSize="17"

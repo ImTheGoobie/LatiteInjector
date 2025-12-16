@@ -2,11 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.AccessControl;
-using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -43,12 +39,6 @@ public static class Injector
         return true;
     }
 
-    private static bool IsInjected(string dllPath)
-    {
-        Minecraft.Refresh();
-        return Minecraft.Modules.Cast<ProcessModule>().Any(m => m.FileName == dllPath);
-    }
-
     public static async Task InjectionPrep()
     {
         await Task.Run(async () =>
@@ -59,7 +49,6 @@ public static class Injector
                 {
                     try
                     {
-                        // TODO: Fix version detection, FileVersionInfo.FileVersion seems to be null
                         if (Minecraft.MainModule?.FileName != null)
                         {
                             string FileName = Minecraft.MainModule.FileName;
@@ -91,7 +80,7 @@ public static class Injector
             supportedVersionsString.Contains(MinecraftVersion.Substring(0,
                 MinecraftVersion.LastIndexOf(".", StringComparison.Ordinal)));
 
-        if (!isCompatible && !Properties.Settings.Default.Nightly)
+        if (!isCompatible && !Settings.Default.Nightly && !Settings.Default.Debug)
         {
             string warningMessageThatNobodyWillReadBecauseReadingIsForCasualsIGuess =
                 $"Your Minecraft version, {MinecraftVersion}, is not in the supported versions list for Latite Client. It is VERY likely that you will run into crashes or other types of bugs! " +
@@ -174,56 +163,5 @@ public static class Injector
         }
 
         return true;
-    }
-
-    public static async Task WaitForModules()
-    {
-        Application.Current.Dispatcher.Invoke(() => { SetStatusLabel.Pending(App.GetTranslation("Waiting for Minecraft...")); });
-        await Task.Run(() =>
-        {
-            while (true)
-            {
-                Minecraft.Refresh();
-
-                try
-                {
-                    if (!IsMinecraftRunning()) break;
-                    if (Minecraft.Modules.Count > 165) break;
-                }
-                catch (Win32Exception e)
-                {
-                    if (e.NativeErrorCode != 0)
-                    {
-                        if (!IsMinecraftRunning()) break;
-
-                        throw;
-                    }
-                }
-
-                Task.Delay(500);
-            }
-        });
-        Application.Current.Dispatcher.Invoke(() => { SetStatusLabel.Completed(App.GetTranslation("Minecraft has finished loading!")); });
-    }
-
-    // Not sure if this is necessary, gdk apps seem to use a launcher before the actual process spawns
-    public static async Task WaitForMinecraft()
-    {
-        Process? minecraft = null;
-
-        while (minecraft == null)
-        {
-            minecraft = Process.GetProcessesByName("Minecraft.Windows").FirstOrDefault();
-            await Task.Delay(100);
-        }
-
-        while (minecraft.MainWindowHandle == IntPtr.Zero)
-        {
-            minecraft.Refresh();
-            await Task.Delay(100);
-        }
-
-        Minecraft = minecraft;
-        await Task.Delay(100);
     }
 }
