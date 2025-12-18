@@ -52,5 +52,5 @@ jobs:
             Automated release from commit:
             ${{ github.sha }}
           files: |
-            publish/LatiteInjector/*.exe
+            publish/LatiteInjector/**/*.exe
             LatiteInjector.Installer/bin/Release/**/*.exe
