@@ -15,48 +15,47 @@ jobs:
 
     env:
       CONFIGURATION: Release
-      DOTNET_VERSION: 8.0.x
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
 
-      - name: Restore solution
-        run: dotnet restore LatiteInjector.sln
-
-      - name: Build solution
-        run: dotnet build LatiteInjector.sln --configuration ${{ env.CONFIGURATION }} --no-restore
+      - name: Build Solution
+        run: msbuild LatiteInjector.sln `
+          /p:Configuration=${{ env.CONFIGURATION }} `
+          /p:Platform=x64 `
+          /m
 
       # ---------------------------
       # Publish LatiteInjector
       # ---------------------------
       - name: Publish LatiteInjector
-        run: |
-          dotnet publish LatiteInjector/LatiteInjector.csproj `
-            --configuration ${{ env.CONFIGURATION }} `
-            --runtime win-x64 `
-            --self-contained false `
-            -p:PublishSingleFile=true `
-            -p:IncludeAllContentForSelfExtract=true `
-            -o publish/LatiteInjector
+        run: msbuild LatiteInjector/LatiteInjector.csproj `
+          /p:Configuration=${{ env.CONFIGURATION }} `
+          /p:Platform=x64 `
+          /p:RuntimeIdentifier=win-x64 `
+          /p:PublishSingleFile=true `
+          /p:SelfContained=false `
+          /p:IncludeAllContentForSelfExtract=true `
+          /p:PublishDir=publish\LatiteInjector\ `
+          /t:Publish
 
       # ---------------------------
       # Publish Installer
       # ---------------------------
-      - name: Publish LatiteInjector.Installer
-        run: |
-          dotnet publish LatiteInjector.Installer/LatiteInjector.Installer.csproj `
-            --configuration ${{ env.CONFIGURATION }} `
-            --runtime win-x64 `
-            --self-contained false `
-            -p:PublishSingleFile=true `
-            -p:IncludeAllContentForSelfExtract=true `
-            -o publish/Installer
+      - name: Publish Installer
+        run: msbuild LatiteInjector.Installer/LatiteInjector.Installer.csproj `
+          /p:Configuration=${{ env.CONFIGURATION }} `
+          /p:Platform=x64 `
+          /p:RuntimeIdentifier=win-x64 `
+          /p:PublishSingleFile=true `
+          /p:SelfContained=false `
+          /p:IncludeAllContentForSelfExtract=true `
+          /p:PublishDir=publish\Installer\ `
+          /t:Publish
 
       # ---------------------------
       # Create GitHub Release
