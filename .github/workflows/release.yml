@@ -13,9 +13,6 @@ jobs:
   build-and-release:
     runs-on: windows-latest
 
-    env:
-      CONFIGURATION: Release
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,15 +23,14 @@ jobs:
       - name: Restore NuGet
         run: nuget restore LatiteInjector.sln
 
+      # ✅ Build everything ONCE via solution
       - name: Build Solution
         run: msbuild LatiteInjector.sln `
-          /p:Configuration=${{ env.CONFIGURATION }} `
+          /p:Configuration=Release `
           /p:Platform="Any CPU" `
           /m
 
-      # ---------------------------
-      # Publish LatiteInjector (x64)
-      # ---------------------------
+      # ✅ Publish ONLY the main app
       - name: Publish LatiteInjector
         run: msbuild LatiteInjector/LatiteInjector.csproj `
           /p:Configuration=Release `
@@ -46,24 +42,7 @@ jobs:
           /p:PublishDir=publish\LatiteInjector\ `
           /t:Publish
 
-      # ---------------------------
-      # Publish Installer (Any CPU)
-      # ---------------------------
-      - name: Publish Installer
-        run: msbuild LatiteInjector.Installer/LatiteInjector.Installer.csproj `
-          /p:Configuration=Release `
-          /p:Platform="Any CPU" `
-          /p:RuntimeIdentifier=win-x64 `
-          /p:PublishSingleFile=true `
-          /p:SelfContained=false `
-          /p:IncludeAllContentForSelfExtract=true `
-          /p:PublishDir=publish\Installer\ `
-          /t:Publish
-
-
-      # ---------------------------
-      # Create GitHub Release
-      # ---------------------------
+      # ✅ Create release using BUILT EXEs
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -74,4 +53,4 @@ jobs:
             ${{ github.sha }}
           files: |
             publish/LatiteInjector/*.exe
-            publish/Installer/*.exe
+            LatiteInjector.Installer/bin/Release/**/*.exe
