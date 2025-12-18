@@ -29,15 +29,15 @@ jobs:
       - name: Build Solution
         run: msbuild LatiteInjector.sln `
           /p:Configuration=${{ env.CONFIGURATION }} `
-          /p:Platform=x64 `
+          /p:Platform="Any CPU" `
           /m
 
       # ---------------------------
-      # Publish LatiteInjector
+      # Publish LatiteInjector (x64)
       # ---------------------------
       - name: Publish LatiteInjector
         run: msbuild LatiteInjector/LatiteInjector.csproj `
-          /p:Configuration=${{ env.CONFIGURATION }} `
+          /p:Configuration=Release `
           /p:Platform=x64 `
           /p:RuntimeIdentifier=win-x64 `
           /p:PublishSingleFile=true `
@@ -47,18 +47,19 @@ jobs:
           /t:Publish
 
       # ---------------------------
-      # Publish Installer
+      # Publish Installer (Any CPU)
       # ---------------------------
       - name: Publish Installer
         run: msbuild LatiteInjector.Installer/LatiteInjector.Installer.csproj `
-          /p:Configuration=${{ env.CONFIGURATION }} `
-          /p:Platform=x64 `
+          /p:Configuration=Release `
+          /p:Platform="Any CPU" `
           /p:RuntimeIdentifier=win-x64 `
           /p:PublishSingleFile=true `
           /p:SelfContained=false `
           /p:IncludeAllContentForSelfExtract=true `
           /p:PublishDir=publish\Installer\ `
           /t:Publish
+
 
       # ---------------------------
       # Create GitHub Release
